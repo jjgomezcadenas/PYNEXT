@@ -4,13 +4,53 @@ Defines a material shape
 """
 from . system_of_units import *
 from math import pi
-import sys
+from abc import ABC, abstractmethod
 
-class Sphere:
+class Shape(ABC):
+    """An abstract class representing a geometrical shape.
+    In the most general case, the shape is assumed to have a thickness
+    (e.g., a sphericall shell or a cylinder shell), and thus the interface
+    is defined by 5 methos:
+    volume, which corresponds to the volume enclosed by the shape
+    shell_volume, which corresponds to the volume of the shell of thickness t
+    inner_surface which defines the inner surface of the shape
+    outer_surface which defines the outer surface of the shape
+    thickness_surface which defines the surface of the shape due to its thickness
+    thickness which defines the thickness of the shell
+    """
+
+    @abstractmethod
+    def volume(self):
+        pass
+
+    @abstractmethod
+    def shell_volume(self):
+        pass
+
+    @abstractmethod
+    def inner_surface(self):
+        pass
+
+    @abstractmethod
+    def outer_surface(self):
+        pass
+
+    @abstractmethod
+    def thickness_surface(self):
+        pass
+
+    @abstractmethod
+    def thickness(self):
+        pass
+
+
+class Sphere(Shape):
 
     def __init__(self, R):
         """
        Defines a sphere of radius R
+       Notice that a Sphere has thickness = 0
+
        """
         self.R = R
 
@@ -25,6 +65,24 @@ class Sphere:
     def RV(self,V):
         return ((3/(4 * pi)) * V )**(1./3.)
 
+    def volume(self):
+        return self.V
+
+    def shell_volume(self):
+        return 0
+
+    def inner_surface(self):
+        return self.S
+
+    def outer_surface(self):
+        return self.S
+
+    def thickness_surface(self):
+        return 0
+
+    def thickness(self):
+        return 0
+
     def __str__(self):
 
         s= """
@@ -37,90 +95,155 @@ class Sphere:
 
     __repr__ = __str__
 
-
-class Brick:
-
-    def __init__(self, width, heigth, thickness):
-        """
-       Defines a Brick of dimensions Width, Heigth, Thickness
-       """
-        self.w = width
-        self.h = heigth
-        self.t = thickness
-    @property
-    def width(self):
-        return self.w
-
-    @property
-    def heigth(self):
-        return self.h
-
-    @property
-    def thickness(self):
-        return self.t
-
-    @property
-    def V(self):
-        return self.w * self.h * self.t
-    @property
-    def S(self):
-        return 2 * self.w * self.h + 2 * self.w * self.t + 2 * self.h * self.t
-
-    def __str__(self):
-
-        s= """
-        Brick(width = %7.2e, heigth = %7.2e, thickness = %7.2e, V = %7.2e, S = %7.2e)
-        """%(self.width, self.heigth, self.thickness,
-             self.V,
-             self.S)
-
-        return s
-
-    __repr__ = __str__
-
-class Wall:
-    """
-    A wall made of bricks
-    """
-    def __init__(self, brick):
-        self.b = brick
-
-    def number_of_bricks(self, w, h, t):
-        nw = w * 1 / self.b.w
-        nh = h * 1 / self.b.h
-        nt = t * 1 / self.b.t
-
-        return nw * nh * nt
-
-
-class SphereShell(Sphere):
+class SphereShell(Shape):
 
     def __init__(self, R , t):
         """
         Defines a spherical shell of radius R and thickness t
         """
 
-        Sphere.__init__(self, R)
+        self.R = R
         self.t = t
 
     @property
     def V(self):
-        V0 = (4/3) * pi * self.R**3
-        V1 = (4/3) * pi * (self.R + self.t)**3
-        return V1-V0
+        v0 = (4/3) * pi * self.R**3
+        v1 = (4/3) * pi * (self.R + self.t)**3
+        return v1 - v0
+
     @property
     def S(self):
-        return 4 * pi * (self.R + self.t)**2
+        return self.inner_surface() + self.outer_surface() + self.thickness_surface()
+
+    def volume(self):
+        return (4/3) * pi * self.R**3
+
+    def shell_volume(self):
+        return self.V
 
     def inner_surface(self):
         return 4 * pi * self.R**2
 
+    def outer_surface(self):
+        return 4 * pi * (self.R + self.t)**2
+
+    def thickness_surface(self):
+        return 0
+
+    def thickness(self):
+        return self.t
+
     def __str__(self):
 
         s= """
-        SphereShell(R = %7.2e, t = %7.2e, V = %7.2e, S = %7.2e)
+        SphereShell(R = %7.2e, t = %7.2e, V = %7.2e)
+        inner surface = %7.2e
+        outer surface = %7.2e
         """%(self.R,
              self.t,
+             self.V,
+             self.inner_surface(),
+             self.outer_surface())
+
+        return s
+
+    __repr__ = __str__
+
+
+class SemiSphereShell(Shape):
+
+    def __init__(self, R, t):
+        """
+            Defines a semi-spherical shell of radius R and thickness t
+        """
+        self.R = R
+        self.t = t
+        self.ss_ = SphereShell(R, t)
+
+    @property
+    def V(self):
+        return self.ss_.V / 2
+
+    def S(self):
+        return self.inner_surface() + self.outer_surface() + self.thickness_surface()
+
+    def volume(self):
+        return 0.5 * (4/3) * pi * self.R**3
+
+    def shell_volume(self):
+        return self.V
+
+    def inner_surface(self):
+        return self.ss_.inner_surface() / 2
+
+    def outer_surface(self):
+        return self.ss_.outer_surface() / 2
+
+    def thickness_surface(self):
+        return 2 * pi * self.R + self.t
+
+    def thickness(self):
+        return self.t
+
+    def __str__(self):
+
+        s= """
+        SemiSphereShell(R = %7.2e, t = %7.2e, V = %7.2e)
+        inner surface = %7.2e
+        outer surface = %7.2e
+        """%(self.R,
+             self.t,
+             self.V,
+             self.inner_surface(),
+             self.outer_surface())
+
+        return s
+
+    __repr__ = __str__
+
+
+class Brick(Shape):
+
+    def __init__(self, width, heigth, length):
+        """
+       Defines a Brick of dimensions width, heigth, length
+       """
+        self.width  = width
+        self.heigth = heigth
+        self.length = length
+
+    @property
+    def V(self):
+        return self.width * self.heigth * self.length
+
+    @property
+    def S(self):
+        w, h, l = self.width, self.heigth, self.length
+        return 2 * (w * h + w * l + h * l)
+
+    def volume(self):
+        return self.V
+
+    def shell_volume(self):
+        return 0
+
+    def inner_surface(self):
+        return self.S
+
+    def outer_surface(self):
+        return self.S
+
+    def thickness_surface(self):
+        return 0
+
+    def thickness(self):
+        return 0
+
+    def __str__(self):
+
+        s= """
+        Brick(width = %7.2e, heigth = %7.2e, length = %7.2e, V = %7.2e, S = %7.2e)
+        """%(self.width, self.heigth, self.length,
              self.V,
              self.S)
 
@@ -128,28 +251,8 @@ class SphereShell(Sphere):
 
     __repr__ = __str__
 
-class SemiSphereShell(SphereShell):
 
-    def __init__(self, R, t):
-        """
-       Defines a semi-spherical shell of radius R and thickness t
-       """
-
-        SphereShell.__init__(self, R, t)
-
-    @property
-    def V(self):
-        return SphereShell.V / 2
-
-
-    def S(self):
-        return SphereShell.S / 2
-
-    def inner_surface(self):
-        return SphereShell.inner_surface() / 2
-
-
-class Cylinder:
+class Cylinder(Shape):
 
     def __init__(self, R, L):
         """
@@ -172,7 +275,25 @@ class Cylinder:
 
     @property
     def S(self):
-        return self.ShellSurface + self.EndCapSurface
+        return self.ShellSurface
+
+    def volume(self):
+        return self.V
+
+    def shell_volume(self):
+        return 0
+
+    def inner_surface(self):
+        return self.S
+
+    def outer_surface(self):
+        return self.S
+
+    def thickness_surface(self):
+        return 0
+
+    def thickness(self):
+        return 0
 
     def __str__(self):
 
@@ -191,7 +312,7 @@ class Cylinder:
     __repr__ = __str__
 
 
-class CylinderShell:
+class CylinderShell(Shape):
 
     def __init__(self,Rin,Rout,L):
         """
@@ -221,6 +342,25 @@ class CylinderShell:
     def ShellSurface(self):
         return 2 * pi * self.Rout * self.L
 
+    def volume(self):
+        return self.InnerVolume
+
+    def shell_volume(self):
+        return self.ShellVolume
+
+    def inner_surface(self):
+        return self.InnerSurface
+
+    def outer_surface(self):
+        return self.ShellSurface
+
+    def thickness_surface(self):
+        return 2 * pi * self.Rin + self.thickness()
+
+    def thickness(self):
+        return self.Rout - self.Rin
+
+
     def __str__(self):
 
         s= """
@@ -241,7 +381,7 @@ class CylinderShell:
     __repr__ = __str__
 
 
-class Disk:
+class Disk(Shape)::
 
     def __init__(self,R,t):
         """
@@ -252,11 +392,29 @@ class Disk:
 
     @property
     def S(self):
-        return pi * self.R**2
+        return self.inner_surface() + self.outer_surface() + self.thickness_surface()
 
     @property
     def V(self):
-        return self.S * self.t
+        return pi * self.R**2 * self.t
+
+    def volume(self):
+        return self.V
+
+    def shell_volume(self):
+        return 0
+
+    def inner_surface(self):
+        return pi * self.R**2
+
+    def outer_surface(self):
+        return pi * self.t**2
+
+    def thickness_surface(self):
+        return 2 * pi *  self.R * self.t
+
+    def thickness(self):
+        return self.t
 
     def __str__(self):
 
@@ -275,34 +433,16 @@ class Disk:
 FlatPlate = Disk
 
 
+class Wall:
+    """
+    A wall made of identical bricks
+    """
+    def __init__(self, brick):
+        self.b = brick
 
-def Spheres():
-    R=0.43*m
-    R2=1*m
-    t=1*cm
-    sp = Sphere(R)
-    print("""
-    Sphere of radius %7.1f cm
-    Volume %7.2f m3
-    Surface %7.2f m2
-    Radius for Volume is  %7.1f cm
-    """%(R/cm,sp.V()/m3, sp.S()/m2, sp.RV(sp.V())/cm))
+    def number_of_bricks(self, w, h, t):
+        nw = w * 1 / self.b.width
+        nh = h * 1 / self.b.heigth
+        nt = t * 1 / self.b.length
 
-    ssp=SphereShell(R2,t)
-    print( """
-    Sphere Shell of radius %7.1f cm
-    Volume %7.2f m3
-    Surface %7.2f m2
-    """%(R2/cm,ssp.V()/m3, ssp.S()/m2))
-
-    ssp2=SemiSphereShell(R2,t)
-    print("""
-    Semi Sphere Shell of radius %7.1f cm
-    Volume %7.2f m3
-    Surface %7.2f m2
-    """%(R2/cm,ssp2.V()/m3, ssp2.S()/m2))
-
-if __name__ == '__main__':
-
-    Next100()
-    Spheres()
+        return nw * nh * nt
