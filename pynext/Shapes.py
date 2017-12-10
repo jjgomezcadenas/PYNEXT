@@ -61,10 +61,10 @@ class Shape(ABC):
         return self.surface()
 
     def volume(self):
-        return self.inner_volume()
+        pass
 
     def surface(self):
-        return self.inner_surface() + self.outer_surface() + self.thickness_surface()
+        pass
 
     @abstractmethod
     def inner_volume(self):
@@ -137,6 +137,13 @@ class Sphere(Shape):
     def thickness(self):
         return 0
 
+    def volume(self):
+        return self.inner_volume()
+
+    def surface(self):
+        return self.inner_surface()
+
+
     def __str__(self):
 
         s= """
@@ -173,6 +180,13 @@ class SphereShell(Shape):
     def thickness(self):
         return self.Rout - self.Rin
 
+    def volume(self):
+        return self.shell_volume()
+
+    def surface(self):
+        return self.outer_surface()
+
+
     def __str__(self):
 
         s= """
@@ -208,6 +222,13 @@ class Cylinder(Shape):
 
     def thickness(self):
         return 0
+
+    def volume(self):
+        return self.inner_volume()
+
+    def surface(self):
+        return self.inner_surface()
+
 
     def __str__(self):
 
@@ -247,6 +268,11 @@ class CylinderShell(Shape):
     def thickness(self):
         return self.Rout - self.Rin
 
+    def volume(self):
+        return self.shell_volume()
+
+    def surface(self):
+        return self.inner_surface()
 
     def __str__(self):
 
@@ -284,6 +310,12 @@ class Disk(Shape):
     def thickness(self):
         return self.t
 
+    def volume(self):
+        return self.inner_volume()
+
+    def surface(self):
+        return self.inner_surface()
+
     def __str__(self):
 
         s= """
@@ -320,6 +352,12 @@ class Brick(Shape):
 
     def thickness(self):
         return 0
+
+    def volume(self):
+        return self.inner_volume()
+
+    def surface(self):
+        return self.inner_surface()
 
     def __str__(self):
 

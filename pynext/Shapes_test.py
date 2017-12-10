@@ -146,5 +146,5 @@ def test_flat_plate(Next100PV):
 
     assert fp.R / m  == approx(0.52, rel=1e-3)
     assert fp.t / cm == approx(10, rel=1e-3)
-    assert fp.S / m2 == approx(2.02, rel=1e-2)
-    assert fp.V / m3 == approx(8.49e-02, rel=1e-3)
+    assert fp.S / mm2 == approx(8.49e+05, rel=1e-2)
+    assert fp.V / mm3 == approx(8.49e+07, rel=1e-2)

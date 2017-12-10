@@ -6,14 +6,16 @@ from . system_of_units import *
 from math import pi, exp, log
 import sys
 
-class Material:
-    def __init__(self, name, rho, mu_over_rho, ts):
+class PhysicalMaterial:
+    """mu_over_rho is the mass attenuation coefficient at 2.5 MeV"""
+    def __init__(self, name, rho, mu_over_rho):
+
         self.name        = name
         self.rho         = rho
         self.mu_over_rho = mu_over_rho
         self.mu          = mu_over_rho * rho
         self.Latt        = 1 / self.mu
-        self.ts           = ts
+
     @property
     def density(self):
         return self.rho
@@ -30,9 +32,11 @@ class Material:
     def attenuation_length(self):
         return self.Latt
 
-    @property
-    def tensile_strength(self):
-        return self.ts
+    def transmittance_at_qbb(self, z):
+        return exp(-z*self.mu)
+
+    def absorption_at_qbb(self, z):
+        return 1 - exp(-z*self.mu)
 
     def __str__(self):
         g_cm3 = g / cm3
@@ -45,13 +49,11 @@ class Material:
         mass attenuation coefficient (mu_over_rho) = %7.2f cm2/g
         attenuation coefficient (mu)               = %7.2f cm^-1
         attenuation length (Latt)                  = %7.2f cm
-        tensile strenght (ts)                      = %7.2f MPa
     """%(self.name,
          self.density / g_cm3,
          self.mass_attenuation_coefficient / cm2_g,
          self.attenuation_coefficient / icm,
-         self.attenuation_length / cm,
-         self.tensile_strength / MPa
+         self.attenuation_length / cm
          )
 
         return s
@@ -59,18 +61,20 @@ class Material:
     __repr__ = __str__
 
 
-class RadioactiveMaterial(Material):
-    def __init__(self, name, rho, mu_over_rho, ts, a_bi214, a_tl208):
-        super().__init__(name, rho, mu_over_rho, ts)
+class RadioactiveMaterial(PhysicalMaterial):
+    def __init__(self, name, rho, mu_over_rho, a_bi214, a_tl208):
+
+        super().__init__(name, rho, mu_over_rho)
         self.a_bi214        = a_bi214
         self.a_tl208        = a_tl208
         self.C = 1 / 3
+
     @property
-    def activity_bi214(self):
+    def mass_activity_bi214(self):
         return self.a_bi214
 
     @property
-    def activity_tl208(self):
+    def mass_activity_tl208(self):
         return self.a_tl208
 
     def surface_activity(self, z, isotope='Bi214'):
@@ -93,8 +97,33 @@ class RadioactiveMaterial(Material):
         s = super().__str__() + """
         activity Bi-214                = %7.2e Bq /kg
         activity Tl-208                = %7.2e Bq /kg
-    """%(self.activity_bi214 / bq_kg,
-         self.activity_tl208 / bq_kg)
+    """%(self.mass_activity_bi214 / bq_kg,
+         self.mass_activity_tl208 / bq_kg)
+
+        return s
+
+    __repr__ = __str__
+
+class PVMaterial(RadioactiveMaterial):
+    """Material used for construction of PV
+    Sm is the maximum allowable strength of the material
+    """
+
+    def __init__(self, name, rho, mu_over_rho, a_bi214, a_tl208, Sm):
+
+        super().__init__(name, rho, mu_over_rho, a_bi214, a_tl208)
+        self.Sm           = Sm
+
+    @property
+    def maximum_allowable_strength(self):
+            return self.Sm
+
+
+    def __str__(self):
+
+        s = super().__str__() + """
+        maximum_allowable_strength = %7.2e MPa
+    """%(self.maximum_allowable_strength / MPa)
 
         return s
 

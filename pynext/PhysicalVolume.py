@@ -2,8 +2,22 @@
 Physical Volume
 Defines a material medium + Shape
 """
-from . Material import *
-from . Shapes import *
+
+from math import pi, exp, log
+from . system_of_units import *
+from . Shapes import CylinderShell
+from . Shapes import SphereShell
+from . Shapes import Disk
+from . Material import PVMaterial
+
+from collections import namedtuple
+
+PVParams = namedtuple('PVParams', """name rho mu_over_rho
+                                          a_bi214 a_tl208 Sm
+                                          body_R body_t body_L
+                                          flange_L flange_t
+                                          head_t""")
+CSParams = namedtuple('CSParams', """a_bi214 a_tl208 ics_t""")
 
 class PhysicalVolume:
     def __init__(self,name, material,shape):
@@ -11,107 +25,113 @@ class PhysicalVolume:
        Defines a physical volume
 
        """
-        self.name=name
+        self.name     = name
         self.material = material
-        self.shape=shape
+        self.shape    = shape
+        self.M        = self.shape.V * self.material.rho
 
+    @property
+    def V(self):
+        return self.shape.V
 
-    def Volume(self):
-        return self.shape.V()
-    def Surface(self):
-        return self.shape.S()
-    def Mass(self):
-        return self.shape.V()*self.material.rho
-    def Activity(self,t):
-        return self.Surface()*self.material.A(t)
+    @property
+    def S(self):
+        return self.shape.S
 
+    @property
+    def mass(self):
+        return self.M
 
+    @property
+    def activity_bi214(self):
+        return self.M * self.material.mass_activity_bi214
 
+    @property
+    def activity_tl208(self):
+        return self.M * self.material.mass_activity_tl208
 
-class SphericalCan:
-    """
-    A sphere shell filled with some material
-    Rin --> inner radius of shell
-    Rout --> outer radious of shell
+    def activity_bi214_self_shield(self, z):
+        return self.S * self.material.surface_activity(z, isotope='Bi214')
 
-    """
-
-    def __init__(self,Rin=100*cm,t=1*cm,Mat='Cu10',FillFactor=1.,TensileStrength=3300*MPa):
-        self.Rin=Rin
-        self.t= t
-        self.Rout = Rin+t
-        self.F=FillFactor
-        self.Mat = RMaterial(name=Mat, S=TensileStrength)
-
-        self.ShellShape = SphereShell(Rin,t)
-        self.Shell =  PhysicalVolume("Can",self.Mat,self.ShellShape)
-
-    def Material(self):
-        return self.Mat
-
-    def MaterialName(self):
-        return self.Mat.Name()
-
-    def Volume(self):
-        return self.Shell.Volume()
-
-    def Surface(self):
-        return self.Shell.Surface()
-
-    def InnerSurface(self):
-        return self.ShellShape.InnerSurface()
-
-    def InnerRadius(self):
-        return self.Rin
-
-    def OuterRadius(self):
-        return self.Rout
-
-    def FillFactor(self):
-        return self.F
-
-    def Mass(self):
-        mass = self.Shell.Mass()
-        return mass*self.F
-
-    def Activity(self):
-        a= self.Shell.Activity(self.t)/(1./year)*self.F
-        return a
-
-    def ThicknessToPressure(self,P):
-        """
-        Thickness of a sphere of radius R under pressure P
-        """
-        return (P/self.Mat.TensileStrength())*(self.Rout/2.)
-
+    def activity_tl208_self_shield(self, z):
+        return self.S * self.material.surface_activity(z, isotope='Tl208')
 
     def __str__(self):
-        s= """
-        Material = %s
-        Inner Radius = %7.2e cm
-        Outer Radius = %7.2e cm
-        Fill Factor = %7.2f
-        """%(self.Material(), self.InnerRadius()/cm,self.OuterRadius()/cm, self.FillFactor())
 
-        s+= """
-        Volume = %7.2e m3
-        Outer Surface = %7.2e cm2
-        Inner Surface = %7.2e cm2
-        mass = %7.2e kg
-        activity = %7.2e c/year  =%7.2e Bq
-        """%(self.Volume()/m3,self.Surface()/cm2,self.InnerSurface()/cm2,self.Mass()/kg,
-             self.Activity(),self.Activity()*second/year)
+        s =  """ Physical Volume:
+        Shape    = %s
+        Material = %s
+        Volume   = %7.2f m3
+        Surface  = %7.2f m2
+        Mass     = %7.2f kg
+        activity Bi-214 = %7.2e Bq
+        activity Tl-208 = %7.2e Bq
+    """%(self.shape, self.material,
+         self.V / m3, self.S / m2, self.M / kg,
+         self.activity_bi214 / Bq,
+         self.activity_tl208 / Bq)
 
         return s
 
-class Tube(SphericalCan):
-    """
-    A tube filled with some material
-    """
-    def __init__(self,Rin=1*cm,t=1*mm,L=120*cm,Mat='Cu10',FillFactor=1.,TensileStrength=3300*MPa):
-        SphericalCan.__init__(self,Rin,t,Mat,FillFactor,TensileStrength)
-        self.ShellShape = CylinderShell(Rin,self.Rout,L)
-        self.Shell =  PhysicalVolume("Tube",self.Mat,self.ShellShape)
+    __repr__ = __str__
+
+class PressureVessel:
+
+
+    def __init__(self, pvp, csp):
+
+        self.pvp = pvp
+        self.csp = csp
+        # pressure vessel shell
+        pvs            = CylinderShell(Rin=pvp.body_R, Rout=pvp.body_R + pvp.body_t,
+                                       L = pvp.body_L)
+        # copper shield shell
+        css            = CylinderShell(Rin=pvp.body_R - csp.ics_t, Rout=pvp.body_R,
+                                       L = pvp.body_L)
+        # copper head (end-cap)
+        csh            = Disk         (R=pvp.body_R, t=csp.ics_t)
+        # PV flange
+        pvf            = CylinderShell(Rin=pvp.body_R, Rout=pvp.body_R + pvp.flange_L,
+                                       L = pvp.flange_t)
+        # PV head (end-cup)
+        pvh            = Disk         (R=pvp.body_R, t=pvp.head_t)
+        # PV material
+        pvm            = PVMaterial   (name=pvp.name, rho=pvp.rho,
+                                       mu_over_rho=pvp.mu_over_rho,
+                                       a_bi214=pvp.a_bi214,
+                                       a_tl208=pvp.a_tl208,
+                                       Sm=pvp.Sm)
+        # copper shield material
+        csm           = RadioactiveMaterial(name='Cu',
+                                             rho = 8.96 * g/cm3,
+                                             mu_over_rho = 0.039 * cm2/g,
+                                             a_bi214 = csp.a_bi214,
+                                             a_tl208 = csp.a_tl208 )
+
+        self.pvBody    = PhysicalVolume('pvBody'  , pvm, pvs)
+        self.pvFlange  = PhysicalVolume('pvFlange', pvm, pvf)
+        self.pvHead    = PhysicalVolume('pvHead'  , pvm, pvh)
+        self.csBody    = PhysicalVolume('csBody'  , csm, css)
+        self.csHead    = PhysicalVolume('csHead'  , csm, csh)
+
+    def __str__(self):
+
+        s =  """ Pressure Vessel:
+        body    = %s
+        flange  = %s
+        head    = %s
+        Copper Shield:
+        body    = %s
+        flange  = %s
+        head    = %s
+
+    """%(self.pvBody, self.pvFlange, self.pvHead,
+         self.csBody, self.csHead)
+
+        return s
+
+    __repr__ = __str__
+
 
 def Angel():
     Lf=130*cm
