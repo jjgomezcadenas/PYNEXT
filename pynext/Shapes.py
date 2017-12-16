@@ -52,17 +52,20 @@ class Shape(ABC):
     as well as the properties V and S come for free.
     """
 
-    @property
-    def V(self):
-        return self.volume()
 
-    @property
-    def S(self):
-        return self.surface()
+    @abstractmethod
+    def thickness(self):
+        pass
 
+    @abstractmethod
+    def radius(self):
+        pass
+
+    @abstractmethod
     def volume(self):
         pass
 
+    @abstractmethod
     def surface(self):
         pass
 
@@ -86,29 +89,38 @@ class Shape(ABC):
     def thickness_surface(self):
         pass
 
-    @abstractmethod
-    def thickness(self):
-        pass
+    @property
+    def V(self):
+        return self.volume()
+
+    @property
+    def S(self):
+        return self.surface()
 
     def __str__(self):
 
         s= """\n
-        inner_volume      = {:7.2e}
-        shell_volume      = {:7.2e}
-        inner_surface     = {:7.2e}
-        outer_surface     = {:7.2e}
-        thickness_surface = {:7.2e}
-        thickness         = {:7.2e}
-        volume            = {:7.2e}
-        surface           = {:7.2e}
-        """.format(self.volume(),
-        self.shell_volume(),
-        self.inner_surface(),
-        self.outer_surface(),
-        self.thickness_surface(),
-        self.thickness(),
-        self.volume(),
-        self.surface())
+        radius            = {:7.2e} mm
+        thickness         = {:7.2e} mm
+        inner_volume      = {:7.2e} m3
+        shell_volume      = {:7.2e} m3
+        inner_surface     = {:7.2e} m2
+        outer_surface     = {:7.2e} m2
+        thickness_surface = {:7.2e} m2
+
+        volume            = {:7.2e} m3
+        surface           = {:7.2e} m2
+        """.format(
+        self.radius() / mm,
+        self.thickness() / mm,
+        self.inner_volume() / m3,
+        self.shell_volume() / m3,
+        self.inner_surface() / m2,
+        self.outer_surface() / m2,
+        self.thickness_surface() / m2,
+
+        self.volume() / m3,
+        self.surface() / m2)
 
         return s
 
@@ -137,6 +149,9 @@ class Sphere(Shape):
     def thickness(self):
         return 0
 
+    def radius(self):
+        return self.R
+
     def volume(self):
         return self.inner_volume()
 
@@ -147,8 +162,8 @@ class Sphere(Shape):
     def __str__(self):
 
         s= """
-        Sphere(R = %7.2e)
-        """%(self.R)
+        Sphere(R = %7.2e m)
+        """%(self.R / m)
         s2 = super().__str__()
         return s + s2
 
@@ -180,6 +195,9 @@ class SphereShell(Shape):
     def thickness(self):
         return self.Rout - self.Rin
 
+    def radius(self):
+        return self.Rin
+
     def volume(self):
         return self.shell_volume()
 
@@ -190,8 +208,8 @@ class SphereShell(Shape):
     def __str__(self):
 
         s= """
-        SphereShell(Rin = %7.2e, Rout= %7.2e)
-        """%(self.Rin, self.Rout)
+        SphereShell(Rin = %7.2e m , Rout= %7.2e m)
+        """%(self.Rin / m, self.Rout / m)
         s2 = super().__str__()
         return s + s2
 
@@ -220,6 +238,9 @@ class Cylinder(Shape):
     def thickness_surface(self):
         return 0
 
+    def radius(self):
+        return self.R
+
     def thickness(self):
         return 0
 
@@ -233,8 +254,8 @@ class Cylinder(Shape):
     def __str__(self):
 
         s= """
-        Cylinder(R = %7.2e, L = %7.2e)
-        """%(self.R, self.L)
+        Cylinder(R = %7.2e m, L = %7.2e m)
+        """%(self.R / m, self.L / m)
         s2 = super().__str__()
         return s + s2
 
@@ -268,6 +289,9 @@ class CylinderShell(Shape):
     def thickness(self):
         return self.Rout - self.Rin
 
+    def radius(self):
+        return self.Rin
+
     def volume(self):
         return self.shell_volume()
 
@@ -277,8 +301,8 @@ class CylinderShell(Shape):
     def __str__(self):
 
         s= """
-        CylinderShell(Rin = %7.2e, Rout= %7.2e, L = %7.2e)
-        """%(self.Rin, self.Rout, self.L)
+        CylinderShell(Rin = %7.2e m, Rout= %7.2e m , L = %7.2e m)
+        """%(self.Rin / m, self.Rout / m, self.L / m)
         s2 = super().__str__()
         return s + s2
         return s
@@ -310,6 +334,9 @@ class Disk(Shape):
     def thickness(self):
         return self.t
 
+    def radius(self):
+        return self.Rin
+
     def volume(self):
         return self.inner_volume()
 
@@ -319,8 +346,8 @@ class Disk(Shape):
     def __str__(self):
 
         s= """
-        Disk(R = %7.2e, t = %7.2e)
-        """%(self.R, self.t)
+        Disk(R = %7.2e m, t = %7.2e m)
+        """%(self.R / m, self.t / m)
         s2 = super().__str__()
         return s + s2
 
@@ -342,15 +369,18 @@ class Brick(Shape):
         return 0
 
     def inner_surface(self):
-        return 2 * (self.width * self.heigth + self.width * self.length + self.length * self.heigth)
+        return 2*(self.width * self.heigth + self.width * self.length + self.length * self.heigth)
 
     def outer_surface(self):
-        return 2 * (self.width * self.heigth + self.width * self.length + self.length * self.heigth)
+        return 2*(self.width * self.heigth + self.width * self.length + self.length * self.heigth)
 
     def thickness_surface(self):
         return 0
 
     def thickness(self):
+        return 0
+
+    def radius(self):
         return 0
 
     def volume(self):
@@ -362,8 +392,8 @@ class Brick(Shape):
     def __str__(self):
 
         s= """
-        Brick(width= %7.2e, heigth= %7.2e, lengthR= %7.2e)
-        """%(self.width, self.heigth, self.length)
+        Brick(width= %7.2e m , heigth= %7.2e m , lengthR= %7.2e m)
+        """%(self.width / m, self.heigth / m, self.length / m)
         s2 = super().__str__()
         return s + s2
 
