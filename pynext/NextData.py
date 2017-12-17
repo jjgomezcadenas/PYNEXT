@@ -1,5 +1,8 @@
 from . system_of_units import *
-from collections import namedtuple
+from . CylindricalVessel import  CVD
+from . activity_functions import CVA
+from . CylindricalVessel import CylindricalVessel
+from pynext.Material import vacuum, ti316, cu12, cu03, pb
 
 class RFlux:
     def __init__(self,
@@ -135,45 +138,47 @@ class NextPVData:
     __repr__ = __str__
 
 
+def next100_lead_shield():
+    n100d = NextPVData()
+    cvd_pb = CVD(name    ='PBShield',
+                 R       =  n100d.pb_inner_diameter,
+                 th_body = n100d.pb_body_thickness,
+                 L       = n100d.pb_length,
+                 th_head = n100d.pb_head_thickness)
+    n100_pb = CylindricalVessel(name='Next100Pb', material=pb, cvd=cvd_pb)
+    return n100_pb
 
-# VE_TH = 1 * mm # fake thickness used for envelop
-#
-#
-#
-# #Field cage
-# BG_R = 1*cm # radius buffer gas
-# BG_CTH = 5*cm # thickness of buffer gas in cathode
-# BG_ATH = 5*cm # thickness of buffer gas in cathode
-#
-# FC_ID = 105*cm  # FC inner diameter
-# FC_TH = 2.5*cm  # FC thickness (poly)
-# FC_OD = FC_ID + 2*FC_TH
-#
-# FC_IR = FC_ID/2.
-# FC_OR = FC_OD/2.
-# FC_PLATE_TH = 1*mm # thickness of lead
-#
-# FC_Z = 130*cm
-# FC_MAT='Poly'
-# FC_MAT2='Poly2'
-#
-#
-#
-# #Lead Castle
-# LC_ID=PV_OD + 20*cm  #10 cm of air to be filled with lead in the future
-# LC_TH = 25*cm
-# LC_OD = LC_ID +2*LC_TH
-# LC_IR = LC_ID/2.
-# LC_OR = LC_OD/2.
-# LC_PLATE_TH = 25*cm # thickness of lead
-# LC_Z=230*cm + 10*cm
-# LC_MAT='Pb'
-#
-# #tracking plane
-# m_DB=250*gram
-# n_DB=110
-#
-# #Energy plane
-# n_PMT=60
-# n_resistor_PMT=20
-# n_cap_PMT=7
+
+def next100_PV():
+    n100d = NextPVData()
+    cvd_pv = CVD(name    = 'Next100PV',
+                 R       = n100d.pv_inner_radius,
+                 th_body = n100d.pv_body_thickness,
+                 L       = n100d.pv_length,
+                 th_head = n100d.pv_head_thickness)
+    # Pressure Vessel
+    n100_pv = CylindricalVessel(name=cvd_pv.name, material=ti316, cvd=cvd_pv)
+    return n100_pv
+
+
+def next100_copper_shield():
+    n100d = NextPVData()
+    cvd_cu = CVD(name    ='CUShield',
+                 R       = n100d.cs_inner_diameter,
+                 th_body = n100d.cs_body_thickness,
+                 L       = n100d.cs_length,
+                 th_head = n100d.cs_head_thickness)
+    n100_cu = CylindricalVessel(name='Next100CU', material=cu12, cvd=cvd_cu)
+    return n100_cu
+
+
+def next100_envelop():
+    n100d = NextPVData()
+    cvd_pv = CVD(name    = 'Next100PV',
+                 R       = n100d.pv_inner_radius,
+                 th_body = n100d.pv_body_thickness,
+                 L       = n100d.pv_length,
+                 th_head = n100d.pv_head_thickness)
+    # Pressure Vessel
+    n100_envelop = CylindricalVessel(name='Next100Envelop', material=vacuum, cvd=cvd_pv)
+    return n100_envelop
