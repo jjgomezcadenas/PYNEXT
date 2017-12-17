@@ -74,17 +74,20 @@ class PhysicalVolume:
         s =  """ Physical Volume:
         Shape           = %s
         Material        = %s
-        radius          = {:7.2e} mm
-        thickness       = {:7.2e} mm
-        Volume          = %7.2f m3
-        Surface         = %7.2f m2
-        Mass            = %7.2f kg
-        activity Bi-214 = %7.2e Bq
-        activity Tl-208 = %7.2e Bq
-    """%(self.shape, self.material,
+        radius          = %7.2e  mm
+        thickness       = %7.2e  mm
+        Volume          = %7.2e  m3
+        Surface         = %7.2e  m2
+        Mass            = %7.2e  kg
+        activity Bi-214 = %7.2e  mBq
+        activity Tl-208 = %7.2e  mBq
+    """%(self.shape,
+         self.material,
          self.radius / mm,
          self.thickness / mm,
-         self.V / m3, self.S / m2, self.M / kg,
+         self.V / m3,
+         self.S / m2,
+         self.M / kg,
          self.activity_bi214 / Bq,
          self.activity_tl208 / Bq)
 
