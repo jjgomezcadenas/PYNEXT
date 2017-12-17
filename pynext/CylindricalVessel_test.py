@@ -12,7 +12,8 @@ from math import exp
 from collections import namedtuple
 
 from . CylindricalVessel import CylindricalVessel
-from . CylindricalVessel import CVA, CVD
+from . CylindricalVessel import  CVD
+from . activity_functions import CVA
 from . NextData import NextPVData
 from scipy.integrate import quad
 
