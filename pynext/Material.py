@@ -171,14 +171,16 @@ class GXe:
 
 
 
-A_BI214_316Ti =    1 * mBq/kg
-A_TL208_316Ti = 0.15 * mBq/kg
-A_BI214_CU_LIM =    12  * muBq/kg
-A_TL208_CU_LIM =    1.4 * muBq/kg
-A_BI214_CU_BEST =    3  * muBq/kg
-A_TL208_CU_BEST =    1.4 * muBq/kg
-A_BI214_PB = 370 * muBq/kg
-A_TL208_PB = 73 * muBq/kg
+A_BI214_316Ti   =    1    * mBq/kg
+A_TL208_316Ti   =    0.15 * mBq/kg
+A_BI214_CU_LIM  =   12    * muBq/kg
+A_TL208_CU_LIM  =    1.4  * muBq/kg
+A_BI214_CU_BEST =    3    * muBq/kg
+A_TL208_CU_BEST =    1.4  * muBq/kg
+A_BI214_PB      =  370    * muBq/kg
+A_TL208_PB      =   73    * muBq/kg
+A_BI214_Poly    =   62    * muBq/kg
+A_TL208_Poly    =    8    * muBq/kg
 
 vacuum = RadioactiveMaterial(name='vacuum', rho=1e-25 * g/cm3, mu_over_rho=1e-25 * cm2/g,
                              a_bi214=0, a_tl208=0)
@@ -201,3 +203,9 @@ pb =   RadioactiveMaterial(name='Pb',
                            mu_over_rho = 0.044 * cm2/g,
                            a_bi214 = A_BI214_PB,
                            a_tl208 = A_TL208_PB )
+
+poly =   RadioactiveMaterial(name='Poly',
+                           rho = 0.97 * g/cm3,
+                           mu_over_rho = 1e-6 * cm2/g,
+                           a_bi214 = A_BI214_Poly,
+                           a_tl208 = A_TL208_Poly )
