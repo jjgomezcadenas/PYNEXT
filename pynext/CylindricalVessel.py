@@ -11,15 +11,137 @@ from . Shapes import SphereShell
 from . Shapes import Disk
 from . Material import PVMaterial
 from . Material import RadioactiveMaterial
+from . activity_functions import Activity
+from . activity_functions import CVA
+from pynext.activity_functions import str_activity
 from collections import namedtuple
 
 # Cylindrical Vessel Dimensions (CVD)
 CVD = namedtuple('CVD', 'name R th_body L th_head')
 
-# Cylindrical Vessel Activity (CVA)
-CVA = namedtuple('CVA', """name
-                           body_bi214 head_bi214
-                           body_tl208 head_tl208""")
+
+
+class CylindricalDetector:
+    """Base class for detectors with a CylinderShell shape"""
+
+    def __init__(self, name, inner_diameter, length, thickness, material):
+
+        self.name              = name
+        self.inner_diameter    = inner_diameter
+        self.inner_radius      = inner_diameter / 2
+        self.outer_diameter    = inner_diameter + thickness
+        self.outer_radius      = self.outer_diameter / 2
+        self.length            = length
+        self.thickness         = thickness
+        self.material          = material
+        cs                     = CylinderShell(Rin=self.inner_radius,
+                                               Rout=self.outer_radius,
+                                               L=self.length)
+        self.detector         = PhysicalVolume(name, material, cs)
+
+    def __str__(self):
+
+        s = """
+
+        {:s}
+        ------------------
+        material         = {:s}
+        inner diameter   = {:7.2f} mm
+        inner radius     = {:7.2f} mm
+        outer diameter   = {:7.2f} mm
+        outer radius     = {:7.2f} mm
+        thickness        = {:7.2f} mm
+        length           = {:7.2f} mm
+        mass             = {:7.2f} kg
+        activity Bi214   = {:7.2e} mBq
+        activity Tl208   = {:7.2e} mBq
+
+
+    """.format(self.name,
+               self.material.name,
+               self.inner_diameter / mm,
+               self.inner_radius / mm,
+               self.outer_diameter / mm,
+               self.outer_radius / mm,
+               self.thickness / mm,
+               self.length,
+               self.detector.mass / kg,
+               self.detector.activity_bi214 / mBq,
+               self.detector.activity_tl208 / mBq)
+        return s
+
+    __repr__ = __str__
+
+
+class NextFieldCage(CylindricalDetector):
+    def __init__(self,
+                 name='Next100FieldCage',
+                 inner_diameter  = 1050 * mm,
+                 length          = 1300 * mm,
+                 thickness       =   25 * mm,
+                 electrode_pitch =   12 * mm,
+                 material        =      None,
+                 electrode       =      None,
+                 resitstorActivityFC =  None
+                 ):
+
+        super().__init__(name, inner_diameter, length, thickness, material)
+        self.electrode         = electrode
+        self.electrode_pitch   = electrode_pitch
+        self.nof_electrodes    = self.length / self.electrode_pitch
+        self.nof_resistors     = 2 * self.nof_electrodes
+        self.resitstorActivity = resitstorActivityFC
+
+        self.activityElectrodes = Activity(name = 'ActivityElectrodesFC',
+                                           bi214 = self.electrode.detector.activity_bi214 * self.nof_electrodes,
+                                           tl208 = self.electrode.detector.activity_tl208 * self.nof_electrodes)
+
+        self.activityResistors = Activity(name = 'ActivityResistorsFC',
+                                          bi214 = self.resitstorActivity.bi214 * self.nof_resistors,
+                                          tl208 = self.resitstorActivity.tl208 * self.nof_resistors)
+
+        self.activityPoly = Activity(name = 'ActivityPoly',
+                                          bi214 = self.detector.activity_bi214,
+                                          tl208 = self.detector.activity_tl208)
+    @property
+    def activity_electrodes(self):
+        return self.activityElectrodes
+
+    @property
+    def activity_resistors(self):
+        return self.activityResistors
+
+    @property
+    def activity_poly(self):
+        return self.activityPoly
+
+    def __str__(self):
+        s2 = super().__str__()
+        s = """
+        ------------------
+        electrode pitch  = {:7.2f} mm
+        nof_electrodes   = {:7.2f}
+        nof_resistors    = {:7.2f}
+
+        ---
+        Activity
+        {:s}
+        {:s}
+        {:s}
+
+    """.format(
+               self.electrode_pitch,
+               self.nof_electrodes,
+               self.nof_resistors,
+               str_activity('ActivityElectrodesFC', self.activityElectrodes, unit='mBq'),
+               str_activity('ActivityResistorsFC',  self.activityResistors,  unit='mBq'),
+               str_activity('ActivityPoly',         self.activityPoly,       unit='mBq')
+               )
+        return s2 + s
+
+    __repr__ = __str__
+
+
 
 class CylindricalVessel:
     def __init__(self, name, material, cvd):
