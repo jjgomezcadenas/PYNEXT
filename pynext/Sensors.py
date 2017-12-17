@@ -17,12 +17,12 @@ class PMT:
         self.D              = D
         self.R              = D / 2
         self.QE             = QE
-        self.a_pmt_bi214    = a_pmt_bi214
-        self.a_pmt_tl208    = a_pmt_tl208
-        self.a_base_bi214   = a_base_bi214
-        self.a_base_tl208   = a_base_tl208
-        self.a_window_bi214 = a_window_bi214
-        self.a_window_tl208 = a_window_tl208
+        self.a_pmt_bi214    = a_pmt_bi214    / 2 #solid angle
+        self.a_pmt_tl208    = a_pmt_tl208    / 2 # assume only forward radiation
+        self.a_base_bi214   = a_base_bi214   / 2
+        self.a_base_tl208   = a_base_tl208   / 2
+        self.a_window_bi214 = a_window_bi214 / 2
+        self.a_window_tl208 = a_window_tl208 / 2
         self.S            = pi * self.R**2
 
     def __str__(self):
@@ -67,8 +67,8 @@ class SiPM:
         self.TPB     = TPB
         self.PDE     = QE*TPB
         self.S       = L**2
-        self.a_bi214 = a_bi214
-        self.a_tl208 = a_tl208
+        self.a_bi214 = a_bi214 / 2
+        self.a_tl208 = a_tl208 / 2
 
     def __str__(self):
         s="""
@@ -104,8 +104,8 @@ class KDB:
         self.L        = L
         self.pitch    = pitch
         self.S        = L**2
-        self.a_bi214  = a_bi214
-        self.a_tl208  = a_tl208
+        self.a_bi214  = a_bi214 / 2
+        self.a_tl208  = a_tl208 / 2
 
     def __str__(self):
         s="""

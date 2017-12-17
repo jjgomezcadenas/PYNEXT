@@ -93,16 +93,16 @@ class NextFieldCage(CylindricalDetector):
         self.resitstorActivity = resitstorActivityFC
 
         self.activityElectrodes = Activity(name = 'ActivityElectrodesFC',
-                                           bi214 = self.electrode.detector.activity_bi214 * self.nof_electrodes,
-                                           tl208 = self.electrode.detector.activity_tl208 * self.nof_electrodes)
+                    bi214 = self.electrode.detector.activity_bi214 * self.nof_electrodes / 2,
+                    tl208 = self.electrode.detector.activity_tl208 * self.nof_electrodes / 2)
 
         self.activityResistors = Activity(name = 'ActivityResistorsFC',
-                                          bi214 = self.resitstorActivity.bi214 * self.nof_resistors,
-                                          tl208 = self.resitstorActivity.tl208 * self.nof_resistors)
+                    bi214 = self.resitstorActivity.bi214 * self.nof_resistors / 2,
+                    tl208 = self.resitstorActivity.tl208 * self.nof_resistors / 2)
 
         self.activityPoly = Activity(name = 'ActivityPoly',
-                                          bi214 = self.detector.activity_bi214,
-                                          tl208 = self.detector.activity_tl208)
+                    bi214 = self.detector.activity_bi214 / 2,
+                    tl208 = self.detector.activity_tl208 / 2)
     @property
     def activity_electrodes(self):
         return self.activityElectrodes
