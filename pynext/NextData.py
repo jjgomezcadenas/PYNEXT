@@ -7,14 +7,34 @@ class RFlux:
                  U238  = 0.55 * Bq / cm2,
                  Th232 = 0.36 * Bq / cm2
                  ):
-        self.U238  = U238
-        self.Th232 = Th232
+        self.name  = name
         self.U238  = U238
         self.Th232 = Th232
         self.Bi214 = self.U238 * (0.7 / 100)
         self.Tl208 = self.Th232 * (13.65 / 100)
         self.energy_gamma_bi214 = 2447.9 * keV
         self.energy_gamma_tl208 = 2614.5 * keV
+
+    def __str__(self):
+
+        s = """
+
+        {:s}
+        ------------------
+
+        U238  flux  = {:7.2f} mBq / cm2
+        Th232 flux  = {:7.2f} mBq / cm2
+        Bi214 flux  = {:7.2f} mBq / cm2
+        Tl208 flux  = {:7.2f} mBq / cm2
+
+    """.format(self.name,
+               self.U238 / (mBq / cm2),
+               self.Th232 / (mBq / cm2),
+               self.Bi214 / (mBq / cm2),
+               self.Tl208 / (mBq / cm2))
+        return s
+
+    __repr__ = __str__
 
 
 class NextPVData:

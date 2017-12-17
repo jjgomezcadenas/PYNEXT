@@ -17,8 +17,9 @@ from collections import namedtuple
 CVD = namedtuple('CVD', 'name R th_body L th_head')
 
 # Cylindrical Vessel Activity (CVA)
-CVA = namedtuple('CVA', """name body_bi214 head_bi214
-                                body_tl208 head_tl208""")
+CVA = namedtuple('CVA', """name
+                           body_bi214 head_bi214
+                           body_tl208 head_tl208""")
 
 class CylindricalVessel:
     def __init__(self, name, material, cvd):
