@@ -89,31 +89,31 @@ class RadioactiveMaterial(PhysicalMaterial):
     def mass_activity_tl208(self):
         return self.a_tl208
 
-    def surface_activity(self, z, isotope='Bi214'):
-        """Assuming that the material is an infinte slab
-           with an specific activity A0 (Bq/[M]) and a thickness z ([L])
-           then the number of decays (N) is:
-
-           N = A0 * M
-
-           The flux Phi (N /[S]) that escapes the material (not self-shielded) trhough
-           one of the surfaces is given by:
-
-           Phi  = rho * A0 * z * I / (2pi),
-           where:
-           I = Integral (-pi/2, pi/2) { (cos(theta)/mu L) (1 - exp(-mu L/cos(theta))) }
-
-        """
-
-        self.SA =  self.rho * self.a_bi214 * z # Bi 214 by default
-        if isotope == 'Tl208':
-            self.SA =  self.rho * self.a_tl208 * z
-
-        att = SelfAtt(mu=self.mu, L=z)
-        tf, _ = quad(att.f, -np.pi/2 + 0.0001, np.pi/2 -  0.0001)
-
-        return self.SA  * (tf / (2 * np.pi))
-
+    # def surface_activity(self, z, isotope='Bi214'):
+    #     """Assuming that the material is an infinte slab
+    #        with an specific activity A0 (Bq/[M]) and a thickness z ([L])
+    #        then the number of decays (N) is:
+    #
+    #        N = A0 * M
+    #
+    #        The flux Phi (N /[S]) that escapes the material (not self-shielded) trhough
+    #        one of the surfaces is given by:
+    #
+    #        Phi  = rho * A0 * z * I / (2pi),
+    #        where:
+    #        I = Integral (-pi/2, pi/2) { (cos(theta)/mu L) (1 - exp(-mu L/cos(theta))) }
+    #
+    #     """
+    #
+    #     self.SA =  self.rho * self.a_bi214 * z # Bi 214 by default
+    #     if isotope == 'Tl208':
+    #         self.SA =  self.rho * self.a_tl208 * z
+    #
+    #     att = SelfAtt(mu=self.mu, L=z)
+    #     tf, _ = quad(att.f, -np.pi/2 + 0.0001, np.pi/2 -  0.0001)
+    #
+    #     return self.SA  * (tf / (2 * np.pi))
+    #
     def __str__(self):
         bq_kg = Bq / kg
 
@@ -122,7 +122,7 @@ class RadioactiveMaterial(PhysicalMaterial):
         activity Tl-208                = %7.2e Bq /kg
     """%(self.mass_activity_bi214 / bq_kg,
          self.mass_activity_tl208 / bq_kg)
-
+    
         return s
 
     __repr__ = __str__

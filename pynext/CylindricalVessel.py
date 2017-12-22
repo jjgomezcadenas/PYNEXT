@@ -29,7 +29,7 @@ class CylindricalDetector:
         self.name              = name
         self.inner_diameter    = inner_diameter
         self.inner_radius      = inner_diameter / 2
-        self.outer_diameter    = inner_diameter + thickness
+        self.outer_diameter    = inner_diameter + 2 * thickness
         self.outer_radius      = self.outer_diameter / 2
         self.length            = length
         self.thickness         = thickness
@@ -154,8 +154,9 @@ class CylindricalVessel:
         CV = namedtuple('CV', 'name material body head')
 
         self.cvd = cvd
-        cs =      CylinderShell(Rin=cvd.R, Rout=cvd.R + cvd.th_body, L=cvd.L)
-        ch =      Disk         (R=cvd.R, t=cvd.th_head)
+        Rout = cvd.R + cvd.th_body
+        cs =   CylinderShell(Rin=cvd.R, Rout=Rout, L=cvd.L)
+        ch =   Disk         (R=cvd.R, t=cvd.th_head)
 
         self.cv = CV(name = name,
                      material = material,
@@ -268,8 +269,8 @@ class CylindricalVessel:
         material  = {:s}
 
         specific activity of material:
-        Bi-214    = {:7.2f} mBq/kg
-        Tl-208    = {:7.2f} mBq/kg
+        Bi-214    = {:7.2e} mBq/kg
+        Tl-208    = {:7.2e} mBq/kg
 
         body:
         R         = {:7.2f} mm

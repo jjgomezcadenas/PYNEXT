@@ -58,12 +58,12 @@ class NextPVData:
         self.pv_body_thickness = pv_body_thickness
         self.pv_head_thickness = pv_head_thickness
         self.pv_inner_radius   = self.pv_inner_diameter / 2.
-        self.pv_outer_diameter = self.pv_inner_diameter + self.pv_body_thickness
+        self.pv_outer_diameter = self.pv_inner_diameter + 2 * self.pv_body_thickness
         self.pv_outer_radius   = self.pv_outer_diameter / 2.
 
         self.cs_head_thickness = cs_head_thickness
         self.cs_body_thickness = cs_body_thickness
-        self.cs_inner_diameter = self.pv_inner_diameter - self.cs_body_thickness
+        self.cs_inner_diameter = self.pv_inner_diameter - 2 * self.cs_body_thickness
         self.cs_length         = self.pv_length
         self.cs_inner_radius   = self.cs_inner_diameter / 2.
         self.cs_outer_diameter = self.pv_inner_diameter
@@ -74,7 +74,7 @@ class NextPVData:
         self.pb_inner_diameter = self.pv_outer_diameter
         self.pb_length         = self.pv_length
         self.pb_inner_radius   = self.pb_inner_diameter / 2.
-        self.pb_outer_diameter = self.pb_inner_diameter + pb_body_thickness
+        self.pb_outer_diameter = self.pb_inner_diameter + 2 * pb_body_thickness
         self.pb_outer_radius   = self.pb_outer_diameter / 2.
 
     def __str__(self):
@@ -141,7 +141,7 @@ class NextPVData:
 def next100_lead_shield():
     n100d = NextPVData()
     cvd_pb = CVD(name    ='PBShield',
-                 R       =  n100d.pb_inner_diameter,
+                 R       =  n100d.pb_inner_radius,
                  th_body = n100d.pb_body_thickness,
                  L       = n100d.pb_length,
                  th_head = n100d.pb_head_thickness)
@@ -164,7 +164,7 @@ def next100_PV():
 def next100_copper_shield():
     n100d = NextPVData()
     cvd_cu = CVD(name    ='CUShield',
-                 R       = n100d.cs_inner_diameter,
+                 R       = n100d.cs_inner_radius,
                  th_body = n100d.cs_body_thickness,
                  L       = n100d.cs_length,
                  th_head = n100d.cs_head_thickness)

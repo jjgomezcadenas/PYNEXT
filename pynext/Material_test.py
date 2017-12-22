@@ -67,11 +67,3 @@ def test_material(materials):
     assert ti316.maximum_allowable_strength / MPa      == approx(139, rel=1e-2)
     assert ti316.mass_activity_bi214 / mbq_kg          == approx(1, rel=1e-3)
     assert ti316.mass_activity_tl208 / mbq_kg          == approx(0.4, rel=1e-3)
-
-
-def test_surface_activity(materials):
-    _, rcu = materials
-    t = 12 * cm
-
-    SA = rcu.C * rcu.rho * (rcu.a_bi214 / rcu.mu) * (1 - exp(-t * rcu.mu))
-    rcu.surface_activity(z=t, isotope='Bi214') / (mBq/m2) == approx(SA, rel=1e-5)

@@ -23,6 +23,8 @@ class PMT:
         self.a_base_tl208   = a_base_tl208   / 2
         self.a_window_bi214 = a_window_bi214 / 2
         self.a_window_tl208 = a_window_tl208 / 2
+        self.a_bi214        = self.a_pmt_bi214 + self.a_base_bi214 + self.a_window_bi214
+        self.a_tl208        = self.a_pmt_tl208 + self.a_base_tl208 + self.a_window_tl208
         self.S            = pi * self.R**2
 
     def __str__(self):
@@ -31,6 +33,11 @@ class PMT:
         PMT Diameter            = %7.2f cm
         PMT Surface             = %7.2f cm2
         PMT QE                  = %7.2f
+        total activity:
+        bi214 activity          = %7.2f mBq
+        tl208 activity          = %7.2f mBq
+
+        partial activities
         bi214 activity (PMT)    = %7.2f mBq
         tl208 activity (PMT)    = %7.2f mBq
         bi214 activity (Base)   = %7.2f mBq
@@ -38,6 +45,7 @@ class PMT:
         bi214 activity (Window) = %7.2f mBq
         tl208 activity (Window) = %7.2f mBq
         """%(self.name, self.D / cm, self.S / cm2, self.QE,
+             self.a_bi214 / mBq, self.a_tl208 / mBq,
              self.a_pmt_bi214  / mBq,
              self.a_pmt_tl208  / mBq,
              self.a_base_bi214 / mBq,

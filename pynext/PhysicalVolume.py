@@ -4,6 +4,7 @@ Defines a material medium + Shape
 """
 
 from . system_of_units import *
+from . math_functions import attenuation_factor
 
 class PhysicalVolume:
     def __init__(self,name, material,shape):
@@ -63,10 +64,10 @@ class PhysicalVolume:
         return self.material.absorption_at_qbb(z)
 
     def activity_bi214_self_shield(self, z):
-        return self.S * self.material.surface_activity(z, isotope='Bi214')
+        return self.activity_bi214 * attenuation_factor(self.material.mu, z)
 
     def activity_tl208_self_shield(self, z):
-        return self.S * self.material.surface_activity(z, isotope='Tl208')
+        return self.activity_tl208 * attenuation_factor(self.material.mu, z)
 
 
     def __str__(self):
@@ -88,8 +89,8 @@ class PhysicalVolume:
          self.V / m3,
          self.S / m2,
          self.M / kg,
-         self.activity_bi214 / Bq,
-         self.activity_tl208 / Bq)
+         self.activity_bi214 / mBq,
+         self.activity_tl208 / mBq)
 
         return s
 

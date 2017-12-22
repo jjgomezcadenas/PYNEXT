@@ -77,18 +77,24 @@ def activity_table(activities):
 
 
 def pmt_activity(name, nof_pmt, PMT):
-
+    solid_angle_window = 0.5 * 0.9
+    solid_angle_pmt    = 0.5 * 0.35
+    solid_angle_base   = 0.5 * 0.35
     activity = Activity(name = name,
-                     bi214 = nof_pmt * (PMT.a_pmt_bi214 + PMT.a_base_bi214 + PMT.a_window_bi214),
-                     tl208 = nof_pmt * (PMT.a_pmt_tl208 + PMT.a_base_tl208 + PMT.a_window_tl208))
+                     bi214 = nof_pmt * (PMT.a_window_bi214 * solid_angle_window +
+                                        PMT.a_base_bi214 * solid_angle_base +
+                                        PMT.a_pmt_bi214 * solid_angle_pmt),
+                     tl208 = nof_pmt * (PMT.a_window_tl208 * solid_angle_window +
+                                        PMT.a_base_tl208 * solid_angle_base +
+                                        PMT.a_pmt_tl208 * solid_angle_pmt))
     return activity
 
 
 def sipm_activity(name, nof_sipm, SiPM):
-
+    solid_angle = 0.5
     activity = Activity(name = name,
-                     bi214 = nof_sipm * SiPM.a_bi214 ,
-                     tl208 = nof_sipm * SiPM.a_tl208)
+                     bi214 = nof_sipm * SiPM.a_bi214 * solid_angle,
+                     tl208 = nof_sipm * SiPM.a_tl208 * solid_angle)
     return activity
 
 
